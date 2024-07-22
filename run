@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+case "$1" in
+  dev) python3 -m jurigged main.py;;
+  prod) python3 main.py;;
+  *) echo "Usage: $0 {dev|prod}";;
+esac
