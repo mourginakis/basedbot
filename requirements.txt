@@ -1,1 +1,4 @@
 discord.py
+openai
+pyyaml
+python-dotenv

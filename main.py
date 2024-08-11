@@ -7,7 +7,7 @@ from discord.ext import commands
 from openai import OpenAI
 import asyncio
 import time
-import pyyaml
+import yaml
 
 
 # Load in secrets/config
@@ -15,9 +15,10 @@ load_dotenv()
 DISCORD_BOT_TOKEN        = os.getenv("DISCORD_BOT_TOKEN")
 OPENAI_PROJECT_NAME      = os.getenv("OPENAI_PROJECT_NAME")
 OPENAI_PROJECT_API_KEY   = os.getenv("OPENAI_PROJECT_API_KEY")
-DISCORD_BOT_CHANNEL_ID   = os.getenv("DISCORD_BOT_CHANNEL")
+DISCORD_BOT_CHANNEL_ID   = int(os.getenv("DISCORD_BOT_CHANNEL_ID"))
 
 
+print(f"{DISCORD_BOT_CHANNEL_ID}")
 
 # Init the bot server/client
 intents = discord.Intents.default()
