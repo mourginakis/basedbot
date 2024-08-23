@@ -2,3 +2,4 @@ discord.py
 openai
 pyyaml
 python-dotenv
+jurigged[develoop]
