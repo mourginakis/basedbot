@@ -1,7 +1,16 @@
 #!/usr/bin/env bash
 
+source venv/bin/activate
+
 case "$1" in
-  dev) python3 -m jurigged main.py;;
-  prod) python3 main.py;;
-  *) echo "Usage: $0 {dev|prod}";;
+
+    # Run development with jurigged
+    dev)       python3 -m jurigged main.py;;
+
+    # Run production
+    prod)      python3 main.py;;
+
+    # Show usage
+    *)         echo "Usage: $0 {dev|prod}";;
+
 esac
