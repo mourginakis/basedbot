@@ -1,24 +1,14 @@
 #!/usr/bin/env python3
 
-import os
-from dotenv import load_dotenv
 import discord
 from discord.ext import commands
-from openai import OpenAI
 import asyncio
 import time
 import yaml
 
 
-# Load in secrets/config
-load_dotenv()
-DISCORD_BOT_TOKEN        = os.getenv("DISCORD_BOT_TOKEN")
-OPENAI_PROJECT_NAME      = os.getenv("OPENAI_PROJECT_NAME")
-OPENAI_PROJECT_API_KEY   = os.getenv("OPENAI_PROJECT_API_KEY")
-DISCORD_BOT_CHANNEL_ID   = int(os.getenv("DISCORD_BOT_CHANNEL_ID"))
+from src.load_config import DISCORD_BOT_TOKEN, DISCORD_BOT_CHANNEL_ID
 
-
-print(f"{DISCORD_BOT_CHANNEL_ID}")
 
 # Init the bot server/client
 intents = discord.Intents.default()
@@ -27,10 +17,6 @@ intents.presences = False
 intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
-openai_client = OpenAI(api_key=OPENAI_PROJECT_API_KEY,
-                       project=OPENAI_PROJECT_NAME)
-
-
 
 
 # ---------------------------- Global variables ----------------------------
@@ -42,10 +28,6 @@ bot_globals = {
     "total_cost_since_bot_reboot": 0.0,
     "total_credits": 53.0,
 }
-
-# check billing here:
-# https://platform.openai.com/settings/organization/billing/overview
-
 
 
 # This runs at login (on_ready)
@@ -97,31 +79,6 @@ async def dalle_loop():
             f"```\n"
         )
         await asyncio.sleep(0.1)
-
-
-
-
-
-async def run_dalle(model="dall-e-3", prompt="", size="1792x1024", quality="hd"):
-    """
-    dalle-3 limit is 7 images per minute
-    dalle-2 limit is 50 images per minute
-    urls will expire after 1 hour
-    https://platform.openai.com/docs/guides/images/usage
-    https://platform.openai.com/settings/organization/limits
-    1024x1024, 1792x1024, or 1024x1792 for DALL·E-3
-    """
-    assert prompt, "Error: no prompt"
-    response = openai_client.images.generate(
-        model=model,
-        prompt=prompt,
-        size=size,
-        quality=quality, # or "hd"
-        n=1,
-    )
-    revised_prompt = response.data[0].revised_prompt
-    image_url = response.data[0].url
-    return revised_prompt, image_url
 
 
 
