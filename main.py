@@ -52,12 +52,8 @@ class BasedBotClient(discord.Client):
 
     async def iterate_once(self):
         channel = self.get_channel(DISCORD_BOT_CHANNEL_ID)
-        
-        # print(f"{time.time()}> iterating. qsize={q1.qsize()}")
 
-        # make the bot show that it's typing
-        # async with channel.typing():
-        #     await asyncio.sleep(1)
+        # print(f"{time.time()}> iterating. qsize={q1.qsize()}")
 
         # consume an item from the queue
         try:
@@ -68,9 +64,11 @@ class BasedBotClient(discord.Client):
         
         print(f"consumed item from queue: {item.prompt}")
 
-        # get the response in another thread
-        loop = asyncio.get_running_loop()
-        result = await loop.run_in_executor(None, lambda: run_dalle_1(item))
+        # make the bot show that it's typing (this doesn't really work too well)
+        async with channel.typing():
+            # get the response in another thread
+            loop = asyncio.get_running_loop()
+            result = await loop.run_in_executor(None, lambda: run_dalle_1(item))
 
         await channel.send(f"{result.url}")
         await channel.send(
