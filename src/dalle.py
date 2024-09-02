@@ -1,3 +1,4 @@
+import time
 from typing import Union
 
 from openai import OpenAI
@@ -14,6 +15,7 @@ openai_client = OpenAI(api_key=OPENAI_PROJECT_API_KEY,
 # check billing here:
 # https://platform.openai.com/settings/organization/billing/overview
 # TODO: is there an API call for this?
+# TODO: https://community.openai.com/t/get-the-remaining-credits-via-the-api/18827/13
 
 # base64 is preferred over image urls because the urls expire after 1 hour
 
@@ -24,6 +26,7 @@ def run_dalle_1(request: DalleRequest) -> DalleResponse:
     # if it's a test request, return a test response
     if type(request) == DalleRequestTest:
         # TODO: base64?
+        time.sleep(1)
         result = DalleResponse(
             b64_json=None,
             revised_prompt="revised prompt for DalleTestRequest",
@@ -31,8 +34,20 @@ def run_dalle_1(request: DalleRequest) -> DalleResponse:
         )
         return result
     
-    raise NotImplementedError
+    response = openai_client.images.generate(
+        model=request.model,
+        prompt=request.prompt,
+        size=request.size,
+        quality=request.quality,
+        n=1,
+    )
 
+    result = DalleResponse(
+        b64_json=None,
+        revised_prompt=response.data[0].revised_prompt,
+        url=response.data[0].url,
+    )
+    return result
 
 
 async def run_dalle(model="dall-e-3", prompt="", size="1792x1024", quality="hd"):
