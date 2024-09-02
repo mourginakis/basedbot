@@ -5,7 +5,7 @@ import asyncio
 import time
 import yaml
 
-from src.load_config import DISCORD_BOT_TOKEN, DISCORD_BOT_CHANNEL_I
+from src.load_config import DISCORD_BOT_TOKEN, DISCORD_BOT_CHANNEL_ID
 
 
 # What the hell is going on with this discord.py library. All behavior is
