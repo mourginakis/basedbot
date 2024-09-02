@@ -7,6 +7,12 @@ import yaml
 
 from src.load_config import DISCORD_BOT_TOKEN, DISCORD_BOT_CHANNEL_ID
 
+# Concurrency paradigms:
+# - asyncio: async/await
+# - threading: threading.Thread
+# - threading: concurrent.futures.ThreadPoolExecutor
+# - CSP?: queue.Queue
+
 
 # What the hell is going on with this discord.py library. All behavior is
 # abstracted to obscurity and the source code is borderline unreadable.
@@ -18,26 +24,33 @@ from src.load_config import DISCORD_BOT_TOKEN, DISCORD_BOT_CHANNEL_ID
 #
 
 class BasedBotClient(discord.Client):
+
     """https://discordpy.readthedocs.io/en/stable/api.html#client"""
+
 
     async def on_ready(self):
         """This runs when the bot logs in"""
         print('Logged on as', self.user)
-        self.loop.create_task(self.my_loop())
-    
-    async def my_loop(self):
-        """This is a loop that runs every 5 seconds"""
         channel = self.get_channel(DISCORD_BOT_CHANNEL_ID)
-        while True:
 
-            # makes bot display "bot is typing" in the channel
-            async with channel.typing():
-                # typing example
+        async def my_loop():
+            # jurigged can't update code in a loop body so we make a 
+            # 2nd function call here.
+            while True:
+                await self.iterate_once()
+
+        self.loop.create_task(my_loop())
+
+
+    async def iterate_once(self):
+        channel = self.get_channel(DISCORD_BOT_CHANNEL_ID)
+        async with channel.typing():
+            # typing example
                 await asyncio.sleep(1)
             
-            # send an example message to the channel
-            await channel.send(f"time: {time.time()}")
-            await asyncio.sleep(5)
+        # send an example message to the channel
+        await channel.send(f"timep: {time.time()}")
+        await asyncio.sleep(5)
 
     async def on_message(self, message):
         """This runs every time a message is sent in the server"""
@@ -47,6 +60,9 @@ class BasedBotClient(discord.Client):
 
         if message.content == 'ping':
             await message.channel.send('pong')
+
+        if message.content.startswith('!dalletest'):
+            await message.channel.send('dalle test')
 
 
 intents = discord.Intents.default()
