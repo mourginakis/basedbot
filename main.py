@@ -8,7 +8,7 @@ from pprint import pformat, pprint
 import functools
 
 from src.load_config import DISCORD_BOT_TOKEN, DISCORD_BOT_CHANNEL_ID
-from src.schema import DalleRequest, DalleRequestTest
+from src.schema import DalleRequest, DalleRequestLow, DalleRequestHigh, DalleRequestTest
 from src.dalle import run_dalle_1
 
 # Concurrency paradigms:
@@ -27,7 +27,7 @@ from src.dalle import run_dalle_1
 # God have mercy on the poor souls who venture into discord.py source code.
 #
 
-q1 = asyncio.Queue()
+q1 = asyncio.Queue(maxsize=3)
 
 class BasedBotClient(discord.Client):
     """https://discordpy.readthedocs.io/en/stable/api.html#client"""
@@ -102,7 +102,58 @@ class BasedBotClient(discord.Client):
         if message.content.startswith('!dalletest '):
             msg = message.content.replace('!dalletest ', '')
             item = DalleRequestTest(prompt=msg, response_format="url")
-            await q1.put(item)
+            try:
+                q1.put_nowait(item)
+            except asyncio.QueueFull:
+                await message.channel.send(
+                    f"```\n"
+                    f"queue is full. wait for jobs to finish.\n"
+                    f"qsize={q1.qsize()}\n"
+                    f"```\n"
+                )
+                return None
+            await message.channel.send(
+                f"```\n"
+                f"added prompt: {item.prompt}\n"
+                f"cost: {item.cost}\n"
+                f"qsize={q1.qsize()}\n"
+                f"```\n"
+            )
+
+        if message.content.startswith('!dallelow '):
+            msg = message.content.replace('!dallelow ', '')
+            item = DalleRequestLow(prompt=msg, response_format="url")
+            try:
+                q1.put_nowait(item)
+            except asyncio.QueueFull:
+                await message.channel.send(
+                    f"```\n"
+                    f"queue is full. wait for jobs to finish.\n"
+                    f"qsize={q1.qsize()}\n"
+                    f"```\n"
+                )
+                return None
+            await message.channel.send(
+                f"```\n"
+                f"added prompt: {item.prompt}\n"
+                f"cost: {item.cost}\n"
+                f"qsize={q1.qsize()}\n"
+                f"```\n"
+            )
+        
+        if message.content.startswith('!dallehigh '):
+            msg = message.content.replace('!dallehigh ', '')
+            item = DalleRequestHigh(prompt=msg, response_format="url")
+            try:
+                q1.put_nowait(item)
+            except asyncio.QueueFull:
+                await message.channel.send(
+                    f"```\n"
+                    f"queue is full. wait for jobs to finish.\n"
+                    f"qsize={q1.qsize()}\n"
+                    f"```\n"
+                )
+                return None
             await message.channel.send(
                 f"```\n"
                 f"added prompt: {item.prompt}\n"
