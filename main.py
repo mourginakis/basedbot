@@ -52,7 +52,8 @@ class BasedBotClient(discord.Client):
 
     async def iterate_once(self):
         channel = self.get_channel(DISCORD_BOT_CHANNEL_ID)
-        print(f"{time.time()}> iterating. qsize={q1.qsize()}")
+        
+        # print(f"{time.time()}> iterating. qsize={q1.qsize()}")
 
         # make the bot show that it's typing
         # async with channel.typing():
