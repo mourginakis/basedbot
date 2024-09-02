@@ -34,8 +34,7 @@ class BasedBotClient(discord.Client):
         channel = self.get_channel(DISCORD_BOT_CHANNEL_ID)
 
         async def my_loop():
-            # jurigged can't update code in a loop body so we make a 
-            # 2nd function call here.
+            # this allows us to hot reload the loop body with jurigged
             while True:
                 await self.iterate_once()
 
@@ -44,12 +43,15 @@ class BasedBotClient(discord.Client):
 
     async def iterate_once(self):
         channel = self.get_channel(DISCORD_BOT_CHANNEL_ID)
+        print(f"{time.time()}> iterating")
         async with channel.typing():
             # typing example
                 await asyncio.sleep(1)
             
         # send an example message to the channel
-        await channel.send(f"timep: {time.time()}")
+        # await channel.send(f"timep: {time.time()}")
+        # weird, if the above line is commented, the typing indicator stays
+        # on the channel for a long time.
         await asyncio.sleep(5)
 
     async def on_message(self, message):
@@ -61,8 +63,10 @@ class BasedBotClient(discord.Client):
         if message.content == 'ping':
             await message.channel.send('pong')
 
-        if message.content.startswith('!dalletest'):
-            await message.channel.send('dalle test')
+        # TODO: make this more friendly (match/case?)
+        if message.content.startswith('!dalletest '):
+            msg = message.content.replace('!dalletest ', '')
+            await message.channel.send(f'You said: {msg}')
 
 
 intents = discord.Intents.default()
