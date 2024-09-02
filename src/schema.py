@@ -39,7 +39,16 @@ class DalleRequestLow(DalleRequest):
     cost: float = 0.02
     response_format: Optional[Literal["url", "b64_json"]]
 
-class ImageResponse(BaseModel):
+class DalleRequestTest(DalleRequest):
+    """Request a test dalle model (free)"""
+    model: Literal["dall-e-2"] = "dall-e-2"
+    prompt: str
+    size: Literal["256x256"] = "256x256"
+    quality: Literal["standard"] = "standard"
+    cost: float = 0.00
+    response_format: Optional[Literal["url", "b64_json"]]
+
+class DalleResponse(BaseModel):
     """Dalle image response"""
     b64_json: Optional[str] = None
     revised_prompt: Optional[str] = None

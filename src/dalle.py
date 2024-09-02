@@ -5,7 +5,7 @@ from openai import AsyncOpenAI
 from openai.types import Image, ImageModel, ImagesResponse
 
 from src.load_config import OPENAI_PROJECT_API_KEY, OPENAI_PROJECT_NAME
-from src.schema import DalleRequest, DalleResponse
+from src.schema import DalleRequest, DalleResponse, DalleRequestTest
 
 openai_client = OpenAI(api_key=OPENAI_PROJECT_API_KEY,
                        project=OPENAI_PROJECT_NAME)
@@ -15,15 +15,29 @@ openai_client = OpenAI(api_key=OPENAI_PROJECT_API_KEY,
 # https://platform.openai.com/settings/organization/billing/overview
 # TODO: is there an API call for this?
 
-
+# base64 is preferred over image urls because the urls expire after 1 hour
 
 
 def run_dalle_1(request: DalleRequest) -> DalleResponse:
-    pass
+    """Makes a call to the OpenAI API to generate an image."""
+
+    # if it's a test request, return a test response
+    if type(request) == DalleRequestTest:
+        # TODO: base64?
+        result = DalleResponse(
+            b64_json=None,
+            revised_prompt="revised prompt for DalleTestRequest",
+            url="https://placehold.co/600x400.png",
+        )
+        return result
+    
+    raise NotImplementedError
+
 
 
 async def run_dalle(model="dall-e-3", prompt="", size="1792x1024", quality="hd"):
     """
+    DEPRECATED
     dalle-3 limit is 7 images per minute
     dalle-2 limit is 50 images per minute
     urls will expire after 1 hour
