@@ -5,6 +5,7 @@ source venv/bin/activate
 case "$1" in
 
     # Run development with jurigged
+    # (this is essentially black magic that lets you live-edit code)
     dev)       python3 -m jurigged main.py;;
 
     # Run production
