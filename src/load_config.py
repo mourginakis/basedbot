@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 
 ##############################################
 ## Secrets
+load_dotenv()
 
 DISCORD_BOT_TOKEN        = os.getenv("DISCORD_BOT_TOKEN",          "")
 OPENAI_PROJECT_NAME      = os.getenv("OPENAI_PROJECT_NAME",        "")
