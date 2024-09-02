@@ -29,7 +29,14 @@ class BasedBotClient(discord.Client):
         """This is a loop that runs every 5 seconds"""
         channel = self.get_channel(DISCORD_BOT_CHANNEL_ID)
         while True:
-            await channel.send(f"{time.time()}")
+
+            # makes bot display "bot is typing" in the channel
+            async with channel.typing():
+                # typing example
+                await asyncio.sleep(1)
+            
+            # send an example message to the channel
+            await channel.send(f"time: {time.time()}")
             await asyncio.sleep(5)
 
     async def on_message(self, message):
