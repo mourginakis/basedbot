@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import io
+import base64
 import discord
 import asyncio
 import time
@@ -71,6 +73,12 @@ class BasedBotClient(discord.Client):
             result = await loop.run_in_executor(None, lambda: run_dalle_1(item))
 
         await channel.send(f"{result.url}")
+
+        # how to send b64 images
+        # not_needed = "data:image/png;base64," + "" # what is this for?
+        # b64img = "iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAESUlEQVR4Ae3Bzes49gAH8PfevrHUEElNrclTTUpEI4cfK2UHioOkHWw4acdhFO1nReawdlIuSK2tbGurJW5CsZVmFw8H5aHtoLHUHpL5Mz6H9+v1uuLer93zUg664cVf5aQ3P/TVnPSefjMnffd1j+akm+99X076+9W/zUlXvfu6nNQAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKyLr//l6Zz08g/+Oyfd+JMv5qQ/PfNMTnq8N+akj950a0767FfuzEkPP/mOnNQAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKyLV9z1YE568tr7c9Idl27JSS/c/kxOuvanv8tJ3/jDP3PSF26/LSfd+aPP5KQGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWZdvP/hJ3LSc5ceykn3Pf/jnPSua+7OSa+/44Gc9MjVX85Jb7z06Zx08ezlnNQAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKyLWz/8kZz0vSd+k5Nue/C/OenSO5/OSVf98vc56dVvuy8n/e/PT+ekm5/6R05qgFkNMKsBZjXArAaY1QCzGmBWA8xqgFkNMKsBZjXArAaY1QCzGmBWA8xqgFkNMKsBZjXArAaY1QCzGmBWA8xqgFkNMKsBZjXArAaY1QCzGmDWxSOvfVlOunzNz3PSm37wnxz13E056QO/+FhOeva2f+Wkv17ckJOu/PjjOakBZjXArAaY1QCzGmBWA8xqgFkNMKsBZjXArAaY1QCzGmBWA8xqgFkNMKsBZjXArAaY1QCzGmBWA8xqgFkNMKsBZjXArAaY1QCzGmBWA8xqgFkX133rNTnp8i3X56RX3f3HnHT/Y5/MSe99w/U56e1PvTUn/fpT385J37n28zmpAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZV9zz/b+9lIPe8sAjOenRH96Rk55/7MWc9IkPPZiTvvSzK3PSC/lcTnrl7XflpAaY1QCzGmBWA8xqgFkNMKsBZjXArAaY1QCzGmBWA8xqgFkNMKsBZjXArAaY1QCzGmBWA8xqgFkNMKsBZjXArAaY1QCzGmBWA8xqgFkNMKsBZv0fOZRkC3kHXSEAAAAASUVORK5CYII="
+        # await channel.send(file=discord.File(io.BytesIO(base64.b64decode(b64img)), filename="image.png"))
+
         await channel.send(
             f"```\n"
             f"revised_prompt: {result.revised_prompt}\n"
