@@ -20,3 +20,20 @@ python3 -m pip install -r requirements.txt
 ```bash
 pip3 freeze > requirements.txt
 ```
+
+#### Rsync Example
+Running it on a remote server:
+
+```bash
+# a=preserve links, n=dry run, v=verbose
+$ rsync -anv --exclude '.git/' . username@remote_host:/root/directory
+# remove the `n` to run for real
+```
+
+You can run it with screen:
+```bash
+screen -S basedbot
+./run prod
+# ctrl+a+d to detach
+# screen -r basedbot to reattach
+```
