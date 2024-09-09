@@ -21,7 +21,7 @@ python3 -m pip install -r requirements.txt
 pip3 freeze > requirements.txt
 ```
 
-#### Rsync Example
+### Rsync Example
 Running it on a remote server:
 
 ```bash
