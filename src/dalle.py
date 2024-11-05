@@ -34,19 +34,28 @@ def run_dalle_1(request: DalleRequest) -> DalleResponse:
         )
         return result
     
-    response = openai_client.images.generate(
-        model=request.model,
-        prompt=request.prompt,
-        size=request.size,
-        quality=request.quality,
-        n=1,
-    )
+    try: # try to get the image (content policy violations etc)
+        response = openai_client.images.generate(
+            model=request.model,
+            prompt=request.prompt,
+            size=request.size,
+            quality=request.quality,
+            n=1,
+        )
 
-    result = DalleResponse(
-        b64_json=None,
-        revised_prompt=response.data[0].revised_prompt,
-        url=response.data[0].url,
-    )
+        result = DalleResponse(
+            b64_json=None,
+            revised_prompt=response.data[0].revised_prompt,
+            url=response.data[0].url,
+        )
+
+    except Exception as e:
+        result = DalleResponse(
+            b64_json=None,
+            revised_prompt="Error: " + str(e),
+            url=None,
+        )
+
     return result
 
 
