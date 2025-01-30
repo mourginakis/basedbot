@@ -37,3 +37,7 @@ screen -S basedbot
 # ctrl+a+d to detach
 # screen -r basedbot to reattach
 ```
+
+### Notes
+- Check Billing
+<https://platform.openai.com/settings/organization/billing/overview>
