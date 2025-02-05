@@ -9,9 +9,10 @@ import yaml
 from pprint import pformat, pprint
 import functools
 
-from src.load_config import DISCORD_BOT_TOKEN, DISCORD_BOT_CHANNEL_ID
+from src.load_config import DISCORD_BOT_TOKEN, DISCORD_BOT_CHANNEL_ID, DISCORD_BOT_CHANNEL_ID_CHAT
 from src.schema import DalleRequest, DalleRequestLow, DalleRequestHigh, DalleRequestTest
 from src.dalle import run_dalle_1
+from src.chatgpt import gpt4o_memory, gpt4o1_memory
 
 # Concurrency paradigms:
 # - asyncio: async/await
@@ -91,19 +92,43 @@ class BasedBotClient(discord.Client):
         """This runs every time a message is sent in the server"""
         # don't respond to ourselves
         if message.author == self.user:
-            return
+            return None
 
         if message.content == 'ping':
             await message.channel.send('pong')
+            return None
 
         if message.content.startswith("!info"):
             await message.channel.send(
                 f"```\n"
                 f"commands: !info, !ping, !dalletest, !dallelow, !dallehigh\n"
                 f"total_credits: NotImplementedError\n"
+                f"this channel.id: {message.channel.id}\n"
                 f"qsize={q1.qsize()}\n"
                 f"```\n"
             )
+            return None
+        
+        if message.channel.id == DISCORD_BOT_CHANNEL_ID:
+            pass
+
+        if message.channel.id == DISCORD_BOT_CHANNEL_ID_CHAT:
+
+            if message.content.startswith('!ignore '):
+                return None
+
+            # TODO: make this asynchronous or use CSP and another thread
+            await message.channel.send("🐧💭")
+            msg = message.content
+            response = gpt4o_memory(msg)
+            # repeat the first 10 characters of the prompt
+            concatted = msg[:10] if msg else ""
+            await message.channel.send(
+                f"```\n"
+                f"{response}\n"
+                f"```\n"
+            )
+        
 
         # TODO: make this more friendly (match/case?)
         if message.content.startswith('!dalletest '):
@@ -126,6 +151,7 @@ class BasedBotClient(discord.Client):
                 f"qsize={q1.qsize()}\n"
                 f"```\n"
             )
+            return None
 
         if message.content.startswith('!dallelow '):
             msg = message.content.replace('!dallelow ', '')
@@ -147,6 +173,7 @@ class BasedBotClient(discord.Client):
                 f"qsize={q1.qsize()}\n"
                 f"```\n"
             )
+            return None
         
         if message.content.startswith('!dallehigh '):
             msg = message.content.replace('!dallehigh ', '')
@@ -168,6 +195,7 @@ class BasedBotClient(discord.Client):
                 f"qsize={q1.qsize()}\n"
                 f"```\n"
             )
+            return None
                 
 
 
