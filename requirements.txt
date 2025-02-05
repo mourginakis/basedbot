@@ -3,3 +3,5 @@ openai
 pyyaml
 python-dotenv
 jurigged[develoop]
+audioop-lts; python_version>='3.13'
+devtools
