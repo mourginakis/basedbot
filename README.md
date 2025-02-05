@@ -41,3 +41,4 @@ screen -S basedbot
 ### Notes
 - Check Billing
 <https://platform.openai.com/settings/organization/billing/overview>
+- TODO: update dependencies once the discord audioop bug is fixed
