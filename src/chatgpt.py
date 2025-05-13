@@ -70,6 +70,8 @@ def gpt4o_memory(s) -> str:
         ]
     )
     response_str = completion.choices[0].message.content
+    # discord response limit is 2000 characters
+    response_str = response_str[:1950] if len(response_str) > 1950 else response_str
     messages.append({"role": "assistant", "content": response_str})
     return response_str
 
