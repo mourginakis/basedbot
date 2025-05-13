@@ -86,8 +86,11 @@ class BasedBotClient(discord.Client):
                 await channel.send(f"{result.url}")
 
             elif isinstance(item, GptImageRequest):
-                result = await loop.run_in_executor(None, lambda: gptimage1(item.prompt, item.quality))
-                await channel.send(file=discord.File(io.BytesIO(result), filename="image.png"))
+                try:
+                    result = await loop.run_in_executor(None, lambda: gptimage1(item.prompt, item.quality))
+                    await channel.send(file=discord.File(io.BytesIO(result), filename="image.png"))
+                except Exception as e:
+                    await channel.send(f"❌ Error generating image: {e}")
 
             # result = await loop.run_in_executor(None, lambda: run_dalle_1(item))
 
