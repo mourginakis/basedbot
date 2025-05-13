@@ -1,6 +1,7 @@
 from openai import OpenAI
 from devtools import debug
 from collections import deque
+import base64
 
 from src.load_config import OPENAI_PROJECT_API_KEY, OPENAI_PROJECT_NAME, DEV_MESSAGE
 
@@ -14,6 +15,34 @@ devmessage = DEV_MESSAGE
 print(f"devmessage={devmessage}")
 
 messages = deque(maxlen=20)
+
+
+def gptimage1(prompt: str, quality="medium") -> str:
+    """
+    https://platform.openai.com/docs/guides/image-generation
+    https://platform.openai.com/docs/models/gpt-image-1
+    """
+    result = client.images.generate(
+        model="gpt-image-1",
+        prompt=prompt,
+        n=1,
+        size="auto",
+        quality="medium" # high, auto
+    )
+    # Available sizes:
+    #   - 1024x1024  (square)
+    #   - 1536x1024  (landscape)
+    #   - 1024x1536  (portrait)
+    #   - auto       (default)
+    #
+    # Quality options:
+    #   - low
+    #   - medium
+    #   - high
+    #   - auto       (default)
+    image_base64 = result.data[0].b64_json
+    image_bytes = base64.b64decode(image_base64)
+    return image_bytes
 
 
 def gpt4o(s) -> str:

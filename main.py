@@ -8,11 +8,11 @@ import time
 import yaml
 from pprint import pformat, pprint
 import functools
-
+from dataclasses import dataclass
 from src.load_config import DISCORD_BOT_TOKEN, DISCORD_BOT_CHANNEL_ID, DISCORD_BOT_CHANNEL_ID_CHAT
 from src.schema import DalleRequest, DalleRequestLow, DalleRequestHigh, DalleRequestTest
 from src.dalle import run_dalle_1
-from src.chatgpt import gpt4o_memory, gpt4o1_memory
+from src.chatgpt import gpt4o_memory, gpt4o1_memory, gptimage1
 
 # Concurrency paradigms:
 # - asyncio: async/await
@@ -31,6 +31,15 @@ from src.chatgpt import gpt4o_memory, gpt4o1_memory
 #
 
 q1 = asyncio.Queue(maxsize=3)
+
+
+@dataclass
+class GptImageRequest:
+    """Request a GPT image"""
+    prompt: str
+    quality: str
+
+
 
 class BasedBotClient(discord.Client):
     """https://discordpy.readthedocs.io/en/stable/api.html#client"""
@@ -60,7 +69,7 @@ class BasedBotClient(discord.Client):
 
         # consume an item from the queue
         try:
-            item: DalleRequest = q1.get_nowait()
+            item = q1.get_nowait()
         except asyncio.QueueEmpty:
             await asyncio.sleep(0.1)
             return None
@@ -71,20 +80,29 @@ class BasedBotClient(discord.Client):
         async with channel.typing():
             # get the response in another thread
             loop = asyncio.get_running_loop()
-            result = await loop.run_in_executor(None, lambda: run_dalle_1(item))
 
-        await channel.send(f"{result.url}")
+            if isinstance(item, DalleRequest):
+                result = await loop.run_in_executor(None, lambda: run_dalle_1(item))
+                await channel.send(f"{result.url}")
+
+            elif isinstance(item, GptImageRequest):
+                result = await loop.run_in_executor(None, lambda: gptimage1(item.prompt, item.quality))
+                await channel.send(file=discord.File(io.BytesIO(result), filename="image.png"))
+
+            # result = await loop.run_in_executor(None, lambda: run_dalle_1(item))
+
+        # await channel.send(f"{result.url}")
 
         # how to send b64 images
         # not_needed = "data:image/png;base64," + "" # what is this for?
         # b64img = "iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAESUlEQVR4Ae3Bzes49gAH8PfevrHUEElNrclTTUpEI4cfK2UHioOkHWw4acdhFO1nReawdlIuSK2tbGurJW5CsZVmFw8H5aHtoLHUHpL5Mz6H9+v1uuLer93zUg664cVf5aQ3P/TVnPSefjMnffd1j+akm+99X076+9W/zUlXvfu6nNQAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKyLr//l6Zz08g/+Oyfd+JMv5qQ/PfNMTnq8N+akj950a0767FfuzEkPP/mOnNQAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKyLV9z1YE568tr7c9Idl27JSS/c/kxOuvanv8tJ3/jDP3PSF26/LSfd+aPP5KQGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWZdvP/hJ3LSc5ceykn3Pf/jnPSua+7OSa+/44Gc9MjVX85Jb7z06Zx08ezlnNQAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKyLWz/8kZz0vSd+k5Nue/C/OenSO5/OSVf98vc56dVvuy8n/e/PT+ekm5/6R05qgFkNMKsBZjXArAaY1QCzGmBWA8xqgFkNMKsBZjXArAaY1QCzGmBWA8xqgFkNMKsBZjXArAaY1QCzGmBWA8xqgFkNMKsBZjXArAaY1QCzGmDWxSOvfVlOunzNz3PSm37wnxz13E056QO/+FhOeva2f+Wkv17ckJOu/PjjOakBZjXArAaY1QCzGmBWA8xqgFkNMKsBZjXArAaY1QCzGmBWA8xqgFkNMKsBZjXArAaY1QCzGmBWA8xqgFkNMKsBZjXArAaY1QCzGmBWA8xqgFkX133rNTnp8i3X56RX3f3HnHT/Y5/MSe99w/U56e1PvTUn/fpT385J37n28zmpAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZDTCrAWY1wKwGmNUAsxpgVgPMaoBZV9zz/b+9lIPe8sAjOenRH96Rk55/7MWc9IkPPZiTvvSzK3PSC/lcTnrl7XflpAaY1QCzGmBWA8xqgFkNMKsBZjXArAaY1QCzGmBWA8xqgFkNMKsBZjXArAaY1QCzGmBWA8xqgFkNMKsBZjXArAaY1QCzGmBWA8xqgFkNMKsBZv0fOZRkC3kHXSEAAAAASUVORK5CYII="
         # await channel.send(file=discord.File(io.BytesIO(base64.b64decode(b64img)), filename="image.png"))
 
-        await channel.send(
-            f"```\n"
-            f"revised_prompt: {result.revised_prompt}\n"
-            f"```\n"
-        )
+        # await channel.send(
+        #     f"```\n"
+        #     f"revised_prompt: {result.revised_prompt}\n"
+        #     f"```\n"
+        # )
         await asyncio.sleep(0.1)
 
 
@@ -102,6 +120,7 @@ class BasedBotClient(discord.Client):
             await message.channel.send(
                 f"```\n"
                 f"commands: !info, !ping, !dalletest, !dallelow, !dallehigh\n"
+                f"more_commands: !gptimglow !gptimgmed !gptimghigh\n"
                 f"total_credits: NotImplementedError\n"
                 f"this channel.id: {message.channel.id}\n"
                 f"qsize={q1.qsize()}\n"
@@ -196,7 +215,72 @@ class BasedBotClient(discord.Client):
                 f"```\n"
             )
             return None
-                
+        
+        if message.content.startswith('!gptimglow '):
+            msg = message.content.replace('!gptimglow ', '')
+            item = GptImageRequest(prompt=msg, quality="low")
+            try:
+                q1.put_nowait(item)
+            except asyncio.QueueFull:
+                await message.channel.send(
+                    f"```\n"
+                    f"queue is full. wait for jobs to finish.\n"
+                    f"qsize={q1.qsize()}\n"
+                    f"```\n"
+                )
+                return None
+            await message.channel.send(
+                f"```\n"
+                f"added prompt: {item.prompt}\n"
+                f"cost: $0.011\n"
+                f"qsize={q1.qsize()}\n"
+                f"```\n"
+            )
+            return None
+        
+        if message.content.startswith('!gptimgmed '):
+            msg = message.content.replace('!gptimgmed ', '')
+            item = GptImageRequest(prompt=msg, quality="medium")
+            try:
+                q1.put_nowait(item)
+            except asyncio.QueueFull:
+                await message.channel.send(
+                    f"```\n"
+                    f"queue is full. wait for jobs to finish.\n"
+                    f"qsize={q1.qsize()}\n"
+                    f"```\n"
+                )
+                return None
+            await message.channel.send(
+                f"```\n"
+                f"added prompt: {item.prompt}\n"
+                f"cost: $0.042\n"
+                f"qsize={q1.qsize()}\n"
+                f"```\n"
+            )
+            return None
+        
+        if message.content.startswith('!gptimghigh '):
+            msg = message.content.replace('!gptimghigh ', '')
+            item = GptImageRequest(prompt=msg, quality="high")
+            try:
+                q1.put_nowait(item)
+            except asyncio.QueueFull:
+                await message.channel.send(
+                    f"```\n"
+                    f"queue is full. wait for jobs to finish.\n"
+                    f"qsize={q1.qsize()}\n"
+                    f"```\n"
+                )
+                return None
+            await message.channel.send(
+                f"```\n"
+                f"added prompt: {item.prompt}\n"
+                f"cost: $0.167\n"
+                f"qsize={q1.qsize()}\n"
+                f"```\n"
+            )
+            return None
 
 
 intents = discord.Intents.default()
